@@ -13,7 +13,7 @@ movies = pd.read_csv(
 
 # Load vectorizer
 with open(BASE_DIR / "data" / "vectorizer.pkl", "rb") as file:
-    cv = pickle.load(file)
+    _vectorizer = pickle.load(file)
 
 # Load similarity matrix
 with open(BASE_DIR / "data" / "similarity.pkl", "rb") as file:

@@ -1,7 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from src.recommender import recommend
 
-app = FastAPI()
+app = FastAPI(title="CineMind API")
+
+
+@app.get("/")
+def home():
+    return {"message": "CineMind API is running!"}
 
 
 @app.get("/recommend/{movie_title}")

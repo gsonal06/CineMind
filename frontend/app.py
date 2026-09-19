@@ -3,30 +3,6 @@ import pandas as pd
 import requests
 from urllib.parse import quote
 
-st.markdown("""
-<style>
-    .main-title {
-        text-align: center;
-        font-size: 45px;
-        font-weight: bold;
-    }
-
-    .subtitle {
-        text-align: center;
-        font-size: 18px;
-        margin-bottom: 30px;
-    }
-
-    .movie-card {
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 10px;
-        border: 1px solid #444;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-
 
 # -----------------------------
 # Page configuration
@@ -40,11 +16,31 @@ st.set_page_config(
 
 
 # -----------------------------
+# Custom styling
+# -----------------------------
+
+st.markdown("""
+<style>
+    .main-title {
+        text-align: center;
+        font-size: 45px;
+        font-weight: bold;
+    }
+
+    .subtitle {
+        text-align: center;
+        font-size: 18px;
+        margin-bottom: 30px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+# -----------------------------
 # Load movie data
 # -----------------------------
 
 movies = pd.read_csv("data/clean_movies.csv")
-
 movie_titles = sorted(movies["title"].dropna().unique())
 
 
@@ -58,7 +54,9 @@ st.markdown(
 )
 
 st.markdown(
-    '<div class="subtitle">Content-Based Movie Recommendation System</div>',
+    '<div class="subtitle">'
+    'Content-Based Movie Recommendation System'
+    '</div>',
     unsafe_allow_html=True
 )
 
@@ -79,23 +77,43 @@ movie = st.selectbox(
 
 if st.button("🎯 Recommend Movies"):
 
-    api_url = "http://127.0.0.1:8000/recommend/" + quote(movie)
+    api_url = (
+        "http://127.0.0.1:8000/recommend/"
+        + quote(movie)
+    )
 
-    response = requests.get(api_url)
+    try:
+        response = requests.get(
+            api_url,
+            timeout=10
+        )
 
-    if response.status_code == 200:
+        if response.status_code == 200:
 
-        data = response.json()
+            data = response.json()
 
-        st.success(f"Recommendations for {data['movie']}:")
-
-        for item in data["recommendations"]:
-
-            st.write(
-                f"🍿 **{item['title']}**  "
-                f"— Similarity: {item['similarity']}"
+            st.success(
+                f"Recommendations for {data['movie']}:"
             )
 
-    else:
+            for item in data["recommendations"]:
 
-        st.error("Movie not found.")
+                st.write(
+                    f"🍿 **{item['title']}** "
+                    f"— Similarity: {item['similarity']}"
+                )
+
+        elif response.status_code == 404:
+
+            st.error("Movie not found.")
+
+        else:
+
+            st.error("Something went wrong with the API.")
+
+    except requests.exceptions.RequestException:
+
+        st.error(
+            "Could not connect to the CineMind API. "
+            "Make sure the FastAPI server is running."
+        )
